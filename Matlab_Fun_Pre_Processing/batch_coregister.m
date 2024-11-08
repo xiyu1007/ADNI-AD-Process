@@ -97,7 +97,7 @@ function batch_coregiter_job(MNI,ROI_out,ROI,PET,MRI,outputPrefix,verbose,fid,in
             end
             copyfile(m, tempFilePath);
             coregister_job(mni,tempFilePath, interp, outputPrefix,verbose); % 将 MRI 配准到 MNI
-            movefile(rtempFilePath,fullfile(MRI,[outputPrefix,pet_name])); 
+            movefile(rtempFilePath,fullfile(MRI,[outputPrefix,pet_name,ext])); 
     
         else
             % 如果没有找到匹配的 MRI 文件，记录到日志文件并显示警告信息
