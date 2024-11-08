@@ -1,0 +1,96 @@
+MRI
+AC-PC校正：首先使用MIPAV软件对所有MR图像进行前联合（anterior commissure, AC）和后联合（posterior commissure, PC）校正。这一步是为了对齐图像，确保脑结构的正确对齐。
+
+N3算法：接着使用N3算法来校正图像的强度不均匀性。
+
+颅骨剥离（Skull-stripping）：在结构MR图像上进行颅骨剥离，使用的方法是基于学习的方法，包括脑表面提取器（Brain Surface Extractor, BSE）和脑提取工具（Brain Extraction Tool, BET）。这一步是为了从MR图像中移除非脑组织，只保留脑组织。
+
+手动审查：颅骨剥离的结果会进一步进行手动审查，以确保颅骨和硬脑膜被干净地移除。
+
+小脑移除：在移除小脑后，使用FSL软件包对结构MR图像进行分割，将其分为灰质（GM）、白质（WM）和脑脊液（CSF）三种不同的组织。
+
+4D HAMMER：使用一个全自动的四维图谱配准方法4D HAMMER将每个受试者不同时间点的图像注册到一个带有93个手动标记的感兴趣区域（ROI）的模板上。
+
+基于ROI的特征提取：在注册后，可以根据模板中的93个标记的ROI对所有图像进行标记。对于标记MR图像中的每个93个ROI，计算该区域的总灰质体积，并将其用作特征。在这项研究中，只使用灰质进行特征提取，因为灰质受阿尔茨海默病（AD）的影响最大，并且在文献中广泛使用。
+
+
+PET
+
+通常情况下，计算目标与参考区域平均SUV的区域SUV比值（SUVR），需要使用MRI图像来提取参考区域。这是因为PET和MRI技术结合可以提供更准确的结果。
+
+具体步骤如下：
+
+获取目标区域的PET图像和MRI图像。
+
+对MRI图像进行预处理，包括去噪、配准（与PET图像配准以保证一致性）、重采样等。
+
+在MRI图像上定义参考区域，常见的选择是小脑区域。
+
+利用MRI图像的分割方法，提取参考区域的区域标记。
+
+将区域标记应用到PET图像上，提取目标区域的SUV值。
+
+计算参考区域的平均SUV值。
+
+计算目标与参考区域平均SUV的区域SUV比值，即SUVR = 目标区域SUV / 参考区域平均SUV。
+
+
+用3D slicer
+Qualitification 选项下的PET Standard Uptake Value Computation
+输入参数
+PET DICOM volume path (PETDICOMPath)：
+
+这是输入参数，用于指定包含 PET 图像的目录路径。这个目录中的 DICOM 文件包含 SUV 计算所需的头部信息。DICOM 是医学成像领域的一种标准格式，包含图像数据及其相关的元数据。
+Input PET Volume (PETVolume)：
+
+指定用于 SUV 计算的 PET 图像体积。这个图像必须与前面指定的 DICOM 路径所指向的图像相同，确保数据一致性。SUVbw（标准化摄取值比率体重）是常用的代谢活性指标。
+Input VOI Volume (VOIVolume)：
+
+这是输入的标签体积，定义了感兴趣区域（VOI）。这些区域通常由特定的结构或功能区域组成，允许用户关注特定的脑区或组织。
+输出参数
+Output (Output File)：
+
+输出文件收集了从输出标签中提取的信息，包括 SUV 的最大值、均值和最小值，此外还会包含一些来自 DICOM 头的信息。这个文件为后续分析提供了必要的数据支持。
+Output table (OutputCSV)：
+
+这是一个可选输出，保存了 SUV 值的表格，采用逗号分隔格式，每一行对应一个标签的 SUV 值。这种格式方便后续的数据处理和分析。
+Output Label (OutputLabel)：
+
+列出计算 SUV 值的标签。这些标签对应于输入 VOI 中定义的感兴趣区域，便于识别。
+Output Label Value (OutputLabelValue)：
+
+列出计算 SUV 值的标签值。这些值通常是数字，代表特定的解剖区域或功能区，进一步细分了分析结果。
+SUV Max (SUVMax)：
+
+为每个标签提供的 SUV 最大值。这是指在该特定区域中观察到的最高代谢活性。
+SUV Mean (SUVMean)：
+
+为每个标签提供的 SUV 均值，代表在该区域内的平均代谢水平。
+SUV Minimum (SUVMin)：
+
+为每个标签提供的 SUV 最小值，指在该特定区域中观察到的最低代谢活性。
+
+
+
+Colin27 (ch2.nii)
+
+基于同一个体的 MRI 扫描生成。通过对同一名成年健康男性（Colin Holmes）多次扫描后平均生成，使得该模板具有高分辨率和高解剖一致性。
+由于是基于单一被试，因此适合用于一些需要单人脑解剖学细节的研究，但其通用性和代表性可能不足。
+ICBM152 (mni_icbm152_t1_tal_nlin_asym_09a.nii)
+
+基于152名健康成年个体的 MRI 扫描平均生成，旨在更好地代表一般人群的脑解剖学特征。
+使用了非线性配准，将多人的大脑对齐，然后进行平均，以生成具有高通用性和代表性的模板。
+
+
+总结一下，流程是这样的：
+
+PET 图像 → MRI 图像 配准：这一步将 PET 图像对齐到 MRI 图像的空间。
+MRI 图像 → MNI 空间 配准：这一步将 MRI 图像标准化到 MNI 空间。
+PET 图像 → MNI 空间：通过将步骤 1 中的变换矩阵（将 PET 对齐到 MRI 的变换）与步骤 2 中的变换矩阵（将 MRI 对齐到 MNI 的变换）合成，得到将 PET 图像映射到 MNI 空间的变换。
+这种方法能够保证 PET 图像 和 MRI 图像 在 MNI 空间中的位置关系保持一致。
+
+
+变换矩阵：
+  x     - the parameters describing the rigid body rotation, such that a
+          mapping from voxels in G to voxels in F is attained by:
+          VF.mat\spm_matrix(x(:)')*VG.mat
